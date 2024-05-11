@@ -3,12 +3,18 @@ class Assembly():
         pass
 
 class Polygon():
-    def __init__(self, line_list) -> None:
-        self.lines = line_list
-        self.points_x = [line.p1.x for line in line_list]
-        self.points_y = [line.p1.y for line in line_list]
+    def __init__(self, point_list) -> None:
+        self.points = point_list
+        
+    def getPointsXY(self):
+        points_y = [point.y for point in self.points]
+        points_x = [point.x for point in self.points]
+        return points_x, points_y
         
     def plot(self, ax, fmt="b"):
+        points_x, points_y = self.getPointsXY()
+
+        ax.fill(points_x, points_y, color = "#c8c8ff")
         pass
 
 class Line():
