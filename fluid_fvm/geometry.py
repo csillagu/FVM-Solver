@@ -1,6 +1,13 @@
 class Assembly():
-    def __init__(self) -> None:
-        pass
+    def __init__(self, base_polygon, polygon_list) -> None:
+        self.polygon_list = polygon_list
+        self.base_polygon = base_polygon
+
+    def plot(self, ax):
+        self.base_polygon.plot(ax, "white")
+        for p in self.polygon_list:
+            p.plot(ax)
+        
 
 class Polygon():
     def __init__(self, point_list) -> None:
@@ -11,10 +18,10 @@ class Polygon():
         points_x = [point.x for point in self.points]
         return points_x, points_y
         
-    def plot(self, ax, fmt="b"):
+    def plot(self, ax, color="#c8ffc8"):
         points_x, points_y = self.getPointsXY()
 
-        ax.fill(points_x, points_y, color = "#c8c8ff")
+        ax.fill(points_x, points_y, color = color, edgecolor="black")
         pass
 
 class Line():
