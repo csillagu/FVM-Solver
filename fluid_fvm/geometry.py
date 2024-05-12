@@ -14,6 +14,12 @@ class Assembly():
         self._namePolygons()
         self._nameLines()
 
+    def getPolygon(self, point):
+        for p in self.polygon_list+[self.base_polygon]:
+            if p.isPointInside(point):
+                return p.name
+        return ""
+
 
     def _namePolygons(self):
         self.base_polygon.setName("Polygon_0")
@@ -68,6 +74,67 @@ class Polygon():
                 self.lines[p].setName("Line_"+str(next_name))
                 next_name+=1
         return self.lines, next_name
+
+    def isPointInside(self, point):
+
+        # source: https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/amp/
+        polygon = self.points
+
+        num_vertices = len(polygon)
+        
+        x, y = point.x, point.y
+
+        inside = False
+    
+
+        # Store the first point in the polygon and initialize the second point
+
+        p1 = polygon[0]
+    
+
+        # Loop through each edge in the polygon
+
+        for i in range(1, num_vertices + 1):
+
+            # Get the next point in the polygon
+
+            p2 = polygon[i % num_vertices]
+    
+
+            # Check if the point is above the minimum y coordinate of the edge
+
+            if y > min(p1.y, p2.y):
+
+                # Check if the point is below the maximum y coordinate of the edge
+
+                if y <= max(p1.y, p2.y):
+
+                    # Check if the point is to the left of the maximum x coordinate of the edge
+
+                    if x <= max(p1.x, p2.x):
+
+                        # Calculate the x-intersection of the line connecting the point to the edge
+
+                        x_intersection = (y - p1.y) * (p2.x - p1.x) / (p2.y - p1.y) + p1.x
+    
+
+                        # Check if the point is on the same line as the edge or to the left of the x-intersection
+
+                        if p1.x == p2.x or x <= x_intersection:
+
+                            # Flip the inside flag
+
+                            inside = not inside
+    
+
+            # Store the current point as the first point for the next iteration
+
+            p1 = p2
+    
+
+        # Return the value of the inside flag
+
+        return inside
 
 
 
