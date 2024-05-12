@@ -20,6 +20,13 @@ class Assembly():
                 return p.name
         return ""
 
+    def getPolygonNames(self):
+        names =[p.name for p in [self.base_polygon]+self.polygon_list]
+        return names
+    
+    def getLineNames(self):
+        names =[l.name for l in [p.lines for p in [self.base_polygon]+self.polygon_list]]
+        return names
 
     def _namePolygons(self):
         self.base_polygon.setName("Polygon_0")
