@@ -31,6 +31,7 @@ class Polygon():
     def __init__(self, point_list) -> None:
         self.points = point_list
         self.lines = [Line(self.points[i], self.points[(i+1)%len(self.points)]) for i, p in enumerate(self.points)]
+        self.name = ""
 
     def getPointsXY(self):
         points_y = [point.y for point in self.points]
@@ -40,7 +41,11 @@ class Polygon():
     def plot(self, ax, color="#c8ffc8"):
         points_x, points_y = self.getPointsXY()
 
-        ax.fill(points_x, points_y, color = color, edgecolor="black")
+        ax.fill(points_x, points_y, color=color)
+        ax.text(sum(points_x)/len(points_x), sum(points_y)/len(points_y), self.name, ha='center', va='center', color="#5b745b", 
+            bbox={'facecolor':'white','alpha':0.6,'edgecolor':'none','pad':1})
+        for l in self.lines:
+            l.plot(ax)
     
     def setName(self, name):
         self.name = name
@@ -73,9 +78,10 @@ class Line():
         self.p2 = p2
         self.name = ""
     
-    def plot(self, ax, fmt="b-"):
-        ax.plot([self.p1.x, self.p2.x], [self.p1.y, self.p2.y])
-        ax.text((self.p1.x+self.p2.x)/2, (self.p1.y+self.p2.y)/2, self.name)
+    def plot(self, ax, fmt="k-"):
+        ax.plot([self.p1.x, self.p2.x], [self.p1.y, self.p2.y], fmt)
+        ax.text((self.p1.x+self.p2.x)/2, (self.p1.y+self.p2.y)/2, self.name, ha='center', va='center', 
+                bbox={'facecolor':'white','alpha':0.6,'edgecolor':'none','pad':1},color = "black")
     
     def setName(self, name):
         self.name=name
