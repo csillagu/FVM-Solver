@@ -3,14 +3,22 @@ class Assembly():
         self.polygon_list = polygon_list
         self.base_polygon = base_polygon
 
-    def plot(self, ax):
-        self.base_polygon.plot(ax, "white")
-        for p in self.polygon_list:
-            p.plot(ax)
+    def plot(self, ax, colorMap = None, labels =False):
+        if colorMap is None:
+            self.base_polygon.plot(ax, "white", labels)
+            for p in self.polygon_list:
+                    p.plot(ax, labels=labels)
+        else:
+            polygons = [self.base_polygon]+self.polygon_list
+            for p in polygons:
+                if p.name not in colorMap:
+                    p.plot(ax, labels=labels)
+                else:
+                    p.plot(ax, color=colorMap[p.name], labels=labels)
     
 
     def assemble(self):
-    #Assembles the Assembly, assigns names to lines, points and polygons
+        #Assembles the Assembly, assigns names to lines, points and polygons
         self._namePolygons()
         self._nameLines()
 
@@ -20,6 +28,13 @@ class Assembly():
                 return p.name
         return ""
 
+    def getPolygonNames(self):
+        names =[p.name for p in [self.base_polygon]+self.polygon_list]
+        return names
+    
+    def getLineNames(self):
+        names =[l.name for l in [p.lines for p in [self.base_polygon]+self.polygon_list]]
+        return names
 
     def _namePolygons(self):
         self.base_polygon.setName("Polygon_0")
@@ -44,14 +59,15 @@ class Polygon():
         points_x = [point.x for point in self.points]
         return points_x, points_y
         
-    def plot(self, ax, color="#c8ffc8"):
+    def plot(self, ax, color="#c8ffc8", labels = True):
         points_x, points_y = self.getPointsXY()
 
         ax.fill(points_x, points_y, color=color)
-        ax.text(sum(points_x)/len(points_x), sum(points_y)/len(points_y), self.name, ha='center', va='center', color="#5b745b", 
-            bbox={'facecolor':'white','alpha':0.6,'edgecolor':'none','pad':1})
+        if labels:
+            ax.text(sum(points_x)/len(points_x), sum(points_y)/len(points_y), self.name, ha='center', va='center', color="#5b745b", 
+                bbox={'facecolor':'white','alpha':0.6,'edgecolor':'none','pad':1})
         for l in self.lines:
-            l.plot(ax)
+            l.plot(ax,"k-", labels = labels)
     
     def setName(self, name):
         self.name = name
@@ -145,9 +161,10 @@ class Line():
         self.p2 = p2
         self.name = ""
     
-    def plot(self, ax, fmt="k-"):
+    def plot(self, ax, fmt="k-", labels = True):
         ax.plot([self.p1.x, self.p2.x], [self.p1.y, self.p2.y], fmt)
-        ax.text((self.p1.x+self.p2.x)/2, (self.p1.y+self.p2.y)/2, self.name, ha='center', va='center', 
+        if labels:
+            ax.text((self.p1.x+self.p2.x)/2, (self.p1.y+self.p2.y)/2, self.name, ha='center', va='center', 
                 bbox={'facecolor':'white','alpha':0.6,'edgecolor':'none','pad':1},color = "black")
     
     def setName(self, name):
