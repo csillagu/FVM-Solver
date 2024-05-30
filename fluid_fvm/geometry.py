@@ -90,6 +90,10 @@ class Polygon():
                 self.lines[p].setName("Line_"+str(next_name))
                 next_name+=1
         return self.lines, next_name
+    
+    def centerMass(self):
+        points_x, points_y = self.getPointsXY()
+        return Point(sum(points_x)/len(points_x), sum(points_y)/len(points_y))
 
     def isPointInside(self, point):
 
