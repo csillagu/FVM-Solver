@@ -173,6 +173,13 @@ class Line():
     def __eq__(self, other: object) -> bool:
         
         return (self.p1 == other.p1) and (self.p2 == other.p2)
+    
+    def isPerpendicular(self, line2):
+        vec1 = [self.p2.x-self.p1.x, self.p2.y-self.p1.y]
+        vec2 = [line2.p2.x-line2.p1.x, line2.p2.y-line2.p1.y]
+
+        return vec1[0]*vec2[0]+vec1[1]*vec2[1] == 0
+
 
 
 class Point():
@@ -188,4 +195,7 @@ class Point():
 
     def __eq__(self, other: object) -> bool:
         return (self.x == other.x) and (self.y == other.y)
+    def __sub__(self, other):
+        #self-other
+        return Point(self.x-other.x, self.y-other.y)
 
