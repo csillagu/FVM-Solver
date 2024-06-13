@@ -84,6 +84,32 @@ class RectangularConfig(MeshConfig):
     def getVolumeNodeNum(self):
         return self.vyNum*self.vxNum
     
+    def getVNode(self, mathid):
+        return self.volumeMesh[self.math2geoVolume(mathid)]
+    
+    def isValidVGeoIdx(self, geoIdx):
+        iy = geoIdx[0]
+        ix = geoIdx[1]
+        return iy>=0 and ix>=0 and iy<self.vyNum and ix<self.vxNum
+    
+    def getNeighbouringVolumes(self, mathIdx):
+        assert(mathIdx>=0)
+        assert(mathIdx<=self.getVolumeNodeNum())
+        geoIdx = self.math2geoVolume(mathIdx)
+
+        iy = geoIdx[0]
+        ix = geoIdx[1]
+        ret = []
+        for iy_diff in [-1, 0, 1]:
+            for ix_diff in [-1, 0, 1]:
+                if abs(iy_diff) == abs(ix_diff):
+                    continue
+                if not self.isValidVGeoIdx((iy+iy_diff,ix+ix_diff)):
+                    ret.append([])
+                    continue
+                ret.append(self.geo2mathVolume((iy+iy_diff,ix+ix_diff)))
+
+        return ret
 
 def moveLine(point, x,y):
     return MeshPoint(point.x+x, point.y+y)
