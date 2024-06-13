@@ -72,6 +72,19 @@ class RectangularConfig(MeshConfig):
             
             self.volumeMesh[iy,ix] = MeshPoint(volPoint.centerMass().x, volPoint.centerMass().y)
 
+    def geo2mathVolume(self, idx):
+        # y,x
+        y = idx[0]
+        x = idx[1]
+        return y*(self.vxNum)+x
+    
+    def math2geoVolume(self, mathidx):
+        return (int(np.floor(mathidx/(self.vxNum))), mathidx-int(np.floor(mathidx/(self.vxNum)))*(self.vxNum))
+        
+    def getVolumeNodeNum(self):
+        return self.vyNum*self.vxNum
+    
+
 def moveLine(point, x,y):
     return MeshPoint(point.x+x, point.y+y)
 
