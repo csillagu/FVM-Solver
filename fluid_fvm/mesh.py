@@ -25,17 +25,20 @@ class RectangularConfig(MeshConfig):
         self.volumeMesh = np.zeros((self.vyNum, self.vxNum),dtype=MeshPoint,)
         self.connections = []
 
-    def plotMesh(self, ax, texts = False):
+    def plotMesh(self, ax, vTexts = False, fTexts = False):
         for iy, ix in np.ndindex(self.faceMesh.shape):
             mp = self.faceMesh[iy, ix]
             if isinstance(mp, MeshPoint):
-                mp.plot(ax)
+                if fTexts:
+                    mp.plot(ax, text="i:"+str(iy)+" j:"+str(ix)+" mid:"+str(self.geo2mathFace((iy,ix))))
+                else:
+                    mp.plot(ax)
         
 
         for iy, ix in np.ndindex(self.volumeMesh.shape):
             mp = self.volumeMesh[iy, ix]
             if isinstance(mp, MeshPoint):
-                if texts:
+                if vTexts:
                     mp.plot(ax, fmt="gx", text="i:"+str(iy)+" j:"+str(ix)+" mid:"+str(self.geo2mathVolume((iy,ix))))
                 else:
                     mp.plot(ax, fmt="gx")
@@ -110,6 +113,33 @@ class RectangularConfig(MeshConfig):
                 ret.append(self.geo2mathVolume((iy+iy_diff,ix+ix_diff)))
 
         return ret
+    
+    def geo2mathFace(self, idx):
+        # y,x
+        y = idx[0]
+        x = idx[1]
+        return y*(self.fxNum)+x
+    
+    def math2geoFace(self, mathidx):
+        return (int(np.floor(mathidx/(self.fxNum))), mathidx-int(np.floor(mathidx/(self.fxNum)))*(self.fxNum))
+        
+    def getFaceNodeNum(self):
+        return self.fyNum*self.fxNum
+    
+    def getFNode(self, mathid):
+        return self.faceMesh[self.math2geoFace(mathid)]
+    
+    def isValidVGeoIdx(self, geoIdx):
+        iy = geoIdx[0]
+        ix = geoIdx[1]
+        return iy>=0 and ix>=0 and iy<self.vyNum and ix<self.vxNum    
+    
+    def getNeighbouringFaces(self, mathIdx):
+        assert(mathIdx>=0)
+        assert(mathIdx<=self.getVolumeNodeNum())
+        
+
+
 
 def moveLine(point, x,y):
     return MeshPoint(point.x+x, point.y+y)
