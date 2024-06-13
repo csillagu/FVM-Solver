@@ -5,12 +5,24 @@ class MeshConfig():
 
 
 class RectangularConfig(MeshConfig):
-    def __init__(self, xNum, yNum, snapLines) -> None:
-        self.iNum =xNum
-        self.jNum = yNum
+
+    # y+1, x-1       y+1  , x             y+1, x+1,
+    #       
+    #
+    #  y, x-1     	y,x      	    	 y, x+1,
+    #
+    #
+    #  y-1,x-1  	y-1,x                y-1, x+1,
+    #
+
+    def __init__(self, yNum, xNum, snapLines) -> None:
+        self.fxNum =xNum
+        self.fyNum = yNum
+        self.vxNum =xNum-1
+        self.vyNum = yNum-1
         self.snapLines = snapLines
-        self.faceMesh = np.zeros((yNum,xNum),dtype=MeshPoint,)
-        self.volumeMesh = np.zeros((yNum-1,xNum-1),dtype=MeshPoint,)
+        self.faceMesh = np.zeros((self.fyNum ,self.fxNum),dtype=MeshPoint,)
+        self.volumeMesh = np.zeros((self.vyNum, self.vxNum),dtype=MeshPoint,)
         self.connections = []
 
     def plotMesh(self, ax, texts = False):
@@ -42,12 +54,12 @@ class RectangularConfig(MeshConfig):
 
         
     def constructFaceMesh(self, base):
-        for k in range(self.iNum):
-            self.faceMesh[0,k] = lineCut(base.lines[0], k/(self.iNum-1))
-        for j in range(self.jNum):
-            for i in range(self.iNum):
-                x = (base.lines[1].p2.x-base.lines[1].p1.x)*j/(self.jNum-1)
-                y = (base.lines[1].p2.y-base.lines[1].p1.y)*j/(self.jNum-1)
+        for k in range(self.fxNum):
+            self.faceMesh[0,k] = lineCut(base.lines[0], k/(self.fxNum-1))
+        for j in range(self.fyNum):
+            for i in range(self.fxNum):
+                x = (base.lines[1].p2.x-base.lines[1].p1.x)*j/(self.fyNum-1)
+                y = (base.lines[1].p2.y-base.lines[1].p1.y)*j/(self.fyNum-1)
                 
                 self.faceMesh[j,i] = moveLine(self.faceMesh[0,i], x, y)
 
@@ -79,5 +91,6 @@ class MeshPoint():
         #self-other
         return self.x-other.x, self.y-other.y
     
-    def plot(self, ax, fmt = "bx"):
+    def plot(self, ax, fmt = "bx", text = ""):
         ax.plot(self.x, self.y,fmt)
+        ax.text( self.x,  self.y, text)
