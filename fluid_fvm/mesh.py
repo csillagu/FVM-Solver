@@ -13,7 +13,7 @@ class RectangularConfig(MeshConfig):
         self.volumeMesh = np.zeros((yNum-1,xNum-1),dtype=MeshPoint,)
         self.connections = []
 
-    def plotMesh(self, ax):
+    def plotMesh(self, ax, texts = False):
         for iy, ix in np.ndindex(self.faceMesh.shape):
             mp = self.faceMesh[iy, ix]
             if isinstance(mp, MeshPoint):
@@ -23,7 +23,13 @@ class RectangularConfig(MeshConfig):
         for iy, ix in np.ndindex(self.volumeMesh.shape):
             mp = self.volumeMesh[iy, ix]
             if isinstance(mp, MeshPoint):
-                mp.plot(ax, fmt="gx")
+                if texts:
+                    mp.plot(ax, fmt="gx", text="i:"+str(iy)+" j:"+str(ix)+" mid:"+str(self.geo2mathVolume((iy,ix))))
+                else:
+                    mp.plot(ax, fmt="gx")
+                
+
+                
     
     def constructMesh(self, base):
         if len(base.lines) != 4:
