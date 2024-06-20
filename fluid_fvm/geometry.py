@@ -93,7 +93,7 @@ class Polygon():
     
     def centerMass(self):
         points_x, points_y = self.getPointsXY()
-        return Point(sum(points_x)/len(points_x), sum(points_y)/len(points_y))
+        return Vector(sum(points_x)/len(points_x), sum(points_y)/len(points_y))
 
     def isPointInside(self, point):
 
@@ -186,7 +186,7 @@ class Line():
 
 
 
-class Point():
+class Vector():
     def __init__(self, x, y) -> None:
         self.x = x
         self.y = y
@@ -201,5 +201,5 @@ class Point():
         return (self.x == other.x) and (self.y == other.y)
     def __sub__(self, other):
         #self-other
-        return Point(self.x-other.x, self.y-other.y)
+        return Vector(self.x-other.x, self.y-other.y)
 

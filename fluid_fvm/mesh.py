@@ -68,10 +68,10 @@ class RectangularConfig(MeshConfig):
 
     def constructVolumeMesh(self):
         for iy, ix in np.ndindex(self.volumeMesh.shape):
-            volPoint = geo.Polygon([geo.Point(self.faceMesh[iy,ix].x, self.faceMesh[iy,ix].y),
-                                    geo.Point(self.faceMesh[iy+1,ix].x, self.faceMesh[iy+1,ix].y),
-                                    geo.Point(self.faceMesh[iy+1,ix+1].x, self.faceMesh[iy+1,ix+1].y),
-                                    geo.Point(self.faceMesh[iy,ix+1].x, self.faceMesh[iy,ix+1].y)])
+            volPoint = geo.Polygon([geo.Vector(self.faceMesh[iy,ix].x, self.faceMesh[iy,ix].y),
+                                    geo.Vector(self.faceMesh[iy+1,ix].x, self.faceMesh[iy+1,ix].y),
+                                    geo.Vector(self.faceMesh[iy+1,ix+1].x, self.faceMesh[iy+1,ix+1].y),
+                                    geo.Vector(self.faceMesh[iy,ix+1].x, self.faceMesh[iy,ix+1].y)])
             
             self.volumeMesh[iy,ix] = MeshPoint(volPoint.centerMass().x, volPoint.centerMass().y)
 
@@ -153,6 +153,12 @@ class RectangularConfig(MeshConfig):
         n1 = self.getFNode(mathFId1)
         n2 = self.getFNode(mathFId2)
         return np.sqrt((n1.x-n2.x)**2+(n1.y-n2.y)**2)
+    
+    def getFaceNormal(self, mathFId1, mathFId2):
+        n1 = self.getFNode(mathFId1)
+        n2 = self.getFNode(mathFId2)
+        dx = n2.x-n1.x
+        return np.sqrt((n1.x-n2.x)**2+(n1.y-n2.y)**2)
         
 
 
@@ -179,3 +185,4 @@ class MeshPoint():
     def plot(self, ax, fmt = "bx", text = ""):
         ax.plot(self.x, self.y,fmt)
         ax.text( self.x,  self.y, text)
+
