@@ -114,6 +114,7 @@ class RectangularConfig(MeshConfig):
 
         return ret
     
+    # Face functions
     def geo2mathFace(self, idx):
         # y,x
         y = idx[0]
@@ -129,14 +130,28 @@ class RectangularConfig(MeshConfig):
     def getFNode(self, mathid):
         return self.faceMesh[self.math2geoFace(mathid)]
     
-    def isValidVGeoIdx(self, geoIdx):
+    def isValidFGeoIdx(self, geoIdx):
         iy = geoIdx[0]
         ix = geoIdx[1]
-        return iy>=0 and ix>=0 and iy<self.vyNum and ix<self.vxNum    
+        return iy>=0 and ix>=0 and iy<self.fyNum and ix<self.fxNum    
     
-    def getNeighbouringFaces(self, mathIdx):
-        assert(mathIdx>=0)
-        assert(mathIdx<=self.getVolumeNodeNum())
+    def getNeighbouringFaces(self, mathVIdx):
+        assert(mathVIdx>=0)
+        assert(mathVIdx<=self.getVolumeNodeNum())
+
+        geoIdx = self.math2geoVolume(mathVIdx)
+
+        iy = geoIdx[0]
+        ix = geoIdx[1]
+        ret = []
+
+        for iy_diff in [0, 1]:
+            for ix_diff in [0, 1]:
+                if not self.isValidFGeoIdx((iy+iy_diff,ix+ix_diff)):
+                    raise ValueError("Invalid face mesh found")
+                
+                ret.append(self.geo2mathFace((iy+iy_diff,ix+ix_diff)))
+        return ret
         
 
 
