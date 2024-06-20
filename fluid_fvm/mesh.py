@@ -163,7 +163,12 @@ class RectangularConfig(MeshConfig):
         mathFId1, mathFId2 = fNodes
         return geo.Line(self.getFNode(mathFId1), self.getFNode(mathFId2))
     
-
+    def getAreaOfElement(self, mathVIdx):
+        facePointList = self.getNeighbouringFaces(mathVIdx=mathVIdx)
+        x = [self.getFNode(fp).x for fp in facePointList]
+        y = [self.getFNode(fp).y for fp in facePointList]
+        return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
+        
         
 
 
