@@ -103,10 +103,7 @@ class RectangularConfig(MeshConfig):
         iy = geoIdx[0]
         ix = geoIdx[1]
         ret = []
-        for iy_diff in [-1, 0, 1]:
-            for ix_diff in [-1, 0, 1]:
-                if abs(iy_diff) == abs(ix_diff):
-                    continue
+        for iy_diff, ix_diff in [(-1,0),(0,1),(1,0),(0,-1)]:
                 if not self.isValidVGeoIdx((iy+iy_diff,ix+ix_diff)):
                     ret.append([])
                     continue
@@ -143,15 +140,15 @@ class RectangularConfig(MeshConfig):
 
         iy = geoIdx[0]
         ix = geoIdx[1]
-        ret = []
+        facePointList = []
 
-        for iy_diff in [0, 1]:
-            for ix_diff in [0, 1]:
+        for iy_diff, ix_diff in [(0,0), (0,1), (1,1), (1,0)]:
                 if not self.isValidFGeoIdx((iy+iy_diff,ix+ix_diff)):
                     raise ValueError("Invalid face mesh found")
                 
-                ret.append(self.geo2mathFace((iy+iy_diff,ix+ix_diff)))
-        return ret
+                facePointList.append(self.geo2mathFace((iy+iy_diff,ix+ix_diff)))
+
+        return facePointList
         
 
 
@@ -178,3 +175,16 @@ class MeshPoint():
     def plot(self, ax, fmt = "bx", text = ""):
         ax.plot(self.x, self.y,fmt)
         ax.text( self.x,  self.y, text)
+
+class MeshLine():
+    def __init__(self, p1, p2) -> None:
+        self.p1 = p1
+        self.p2 = p2
+
+    def __eq__(self, other: object) -> bool:
+        return (self.p1 == other.p1) and (self.p2 == other.p2)
+    
+    
+    def plot(self, ax, fmt = "bx", text = ""):
+        ax.plot(self.p1, fmt = fmt, text=text)
+        
