@@ -147,7 +147,12 @@ class RectangularConfig(MeshConfig):
                     raise ValueError("Invalid face mesh found")
                 
                 facePointList.append(self.geo2mathFace((iy+iy_diff,ix+ix_diff)))
-                ret = []
+
+        return facePointList
+    
+    def getNeighbouringFaceLines(self, mathVIdx):
+        facePointList = self.getNeighbouringFaces(mathVIdx=mathVIdx)
+        ret = []
         for k in range(len(facePointList)):
             f_line = self.getLineFromFNodes((facePointList[k], facePointList[(k+1)%len(facePointList)]))
             ret.append(f_line)
