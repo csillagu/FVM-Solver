@@ -149,6 +149,10 @@ class RectangularConfig(MeshConfig):
                 facePointList.append(self.geo2mathFace((iy+iy_diff,ix+ix_diff)))
 
         return facePointList
+    def getFaceLength(self, mathFId1, mathFId2):
+        n1 = self.getFNode(mathFId1)
+        n2 = self.getFNode(mathFId2)
+        return np.sqrt((n1.x-n2.x)**2+(n1.y-n2.y)**2)
         
 
 
