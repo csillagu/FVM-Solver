@@ -75,30 +75,30 @@ class RectangularConfig(MeshConfig):
             
             self.volumeMesh[iy,ix] = MeshPoint(volPoint.centerMass().x, volPoint.centerMass().y)
 
-    def geo2mathVolume(self, idx):
+    def geo2mathVolume(self, geoVIdx):
         # y,x
-        y = idx[0]
-        x = idx[1]
+        y = geoVIdx[0]
+        x = geoVIdx[1]
         return y*(self.vxNum)+x
     
-    def math2geoVolume(self, mathidx):
-        return (int(np.floor(mathidx/(self.vxNum))), mathidx-int(np.floor(mathidx/(self.vxNum)))*(self.vxNum))
+    def math2geoVolume(self, mathVIdx):
+        return (int(np.floor(mathVIdx/(self.vxNum))), mathVIdx-int(np.floor(mathVIdx/(self.vxNum)))*(self.vxNum))
         
     def getVolumeNodeNum(self):
         return self.vyNum*self.vxNum
     
-    def getVNode(self, mathid):
-        return self.volumeMesh[self.math2geoVolume(mathid)]
+    def getVNode(self, mathVIdx):
+        return self.volumeMesh[self.math2geoVolume(mathVIdx)]
     
-    def isValidVGeoIdx(self, geoIdx):
-        iy = geoIdx[0]
-        ix = geoIdx[1]
+    def isValidVGeoIdx(self, geoVIdx):
+        iy = geoVIdx[0]
+        ix = geoVIdx[1]
         return iy>=0 and ix>=0 and iy<self.vyNum and ix<self.vxNum
     
-    def getNeighbouringVolumes(self, mathIdx):
-        assert(mathIdx>=0)
-        assert(mathIdx<=self.getVolumeNodeNum())
-        geoIdx = self.math2geoVolume(mathIdx)
+    def getNeighbouringVolumes(self, mathVIdx):
+        assert(mathVIdx>=0)
+        assert(mathVIdx<=self.getVolumeNodeNum())
+        geoIdx = self.math2geoVolume(mathVIdx)
 
         iy = geoIdx[0]
         ix = geoIdx[1]
@@ -112,24 +112,24 @@ class RectangularConfig(MeshConfig):
         return ret
     
     # Face functions
-    def geo2mathFace(self, idx):
+    def geo2mathFace(self, geoFIdx):
         # y,x
-        y = idx[0]
-        x = idx[1]
+        y = geoFIdx[0]
+        x = geoFIdx[1]
         return y*(self.fxNum)+x
     
-    def math2geoFace(self, mathidx):
-        return (int(np.floor(mathidx/(self.fxNum))), mathidx-int(np.floor(mathidx/(self.fxNum)))*(self.fxNum))
+    def math2geoFace(self, mathFIdx):
+        return (int(np.floor(mathFIdx/(self.fxNum))), mathFIdx-int(np.floor(mathFIdx/(self.fxNum)))*(self.fxNum))
         
     def getFaceNodeNum(self):
         return self.fyNum*self.fxNum
     
-    def getFNode(self, mathid):
-        return self.faceMesh[self.math2geoFace(mathid)]
+    def getFNode(self, mathFIdx):
+        return self.faceMesh[self.math2geoFace(mathFIdx)]
     
-    def isValidFGeoIdx(self, geoIdx):
-        iy = geoIdx[0]
-        ix = geoIdx[1]
+    def isValidFGeoIdx(self, geoFIdx):
+        iy = geoFIdx[0]
+        ix = geoFIdx[1]
         return iy>=0 and ix>=0 and iy<self.fyNum and ix<self.fxNum    
     
     def getNeighbouringFaces(self, mathVIdx):
