@@ -9,10 +9,10 @@ class Component():
     def setAssembly(self, a):
         self.assembly = a
 
-    def assignMaterial(self, name, material):
+    def assignMaterial(self, poly_name, material):
         if material.name not in [mat.name for mat in self.materials]:
             self.materials.append(material)
-        self.material_connectivity[name] = material.name
+        self.material_connectivity[poly_name] = material.name
     
     def plot(self, ax, mesh=False):
         colorMap = dict( (p_name,  self._findMaterialByName( self.material_connectivity[p_name]).getProperty("color")) for p_name in self.material_connectivity )
@@ -29,6 +29,11 @@ class Component():
             if mat.name == name:
                 return mat
         return None
+    
+    def findMaterialAtPoint(self, point):
+        poly_name = self.assembly.getPolygon(point)
+        material_name = self.material_connectivity[poly_name]
+        return self._findMaterialByName(material_name)
 
     def setMesh(self, m):
         self.mesh_exists = True
