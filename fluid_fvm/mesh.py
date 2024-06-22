@@ -15,12 +15,11 @@ class RectangularConfig(MeshConfig):
     #  y-1,x-1  	y-1,x                y-1, x+1,
     #
 
-    def __init__(self, yNum, xNum, snapLines) -> None:
+    def __init__(self, yNum, xNum) -> None:
         self.fxNum =xNum
         self.fyNum = yNum
         self.vxNum =xNum-1
         self.vyNum = yNum-1
-        self.snapLines = snapLines
         self.faceMesh = np.zeros((self.fyNum ,self.fxNum),dtype=MeshPoint,)
         self.volumeMesh = np.zeros((self.vyNum, self.vxNum),dtype=MeshPoint,)
         self.connections = []
