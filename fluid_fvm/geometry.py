@@ -35,7 +35,7 @@ class Assembly():
         return names
     
     def getLineNames(self):
-        names =[l.name for l in [p.lines for p in [self.base_polygon]+self.polygon_list]]
+        names = [l.name for p in [self.base_polygon]+self.polygon_list for l in p.lines]
         return names
 
     def _namePolygons(self):
