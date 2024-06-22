@@ -110,6 +110,19 @@ class RectangularConfig(MeshConfig):
                 ret.append(self.geo2mathVolume((iy+iy_diff,ix+ix_diff)))
 
         return ret
+
+    def getNeigbouringVolumeVectors(self, mathVIdx):
+
+        thisNode = self.getVNode(mathVIdx=mathVIdx)
+        nodes = self.getNeighbouringVolumes(mathVIdx=mathVIdx)
+
+        vects = []
+        for n in nodes:
+            if not n:
+                vects.append(n)
+            else:
+                vects.append(self.getVNode(n).toVector()-thisNode.toVector())
+        return vects
     
     # Face functions
     def geo2mathFace(self, geoFIdx):
@@ -184,6 +197,8 @@ class MeshPoint():
     def __init__(self, x, y) -> None:
         self.x = x
         self.y = y
+    def toVector(self):
+        return geo.Vector(x= self.x, y = self.y)
 
     def __eq__(self, other: object) -> bool:
         return (self.x == other.x) and (self.y == other.y)
