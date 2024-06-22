@@ -45,11 +45,18 @@ class HeatTransfer(Physics):
             Jc = Fc*face_normal
             Jb = Fb*face_normal
 
-            # Division by two is due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
-            coeff_mid = gamma*Jc/2 
+            # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
+            # Is taken care of in the mesh class
+            coeff_mid = gamma*Jc
             coeff_neighbour = 0
-            coeff_const = gamma*Jb/2*boundary.value
+            coeff_const = gamma*Jb*boundary.value
 
+            return coeff_mid, coeff_neighbour, coeff_const
+        elif boundary.type == "Neumann":
+            face_length = np.sqrt(face_normal.x**2+face_normal.y**2)
+            coeff_mid = 0
+            coeff_neighbour = 0
+            coeff_const =  boundary.value * face_length
             return coeff_mid, coeff_neighbour, coeff_const
         else:
             raise AttributeError("Boundary condition not supported")
