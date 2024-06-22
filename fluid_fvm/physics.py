@@ -18,7 +18,7 @@ class HeatTransfer(Physics):
         return name in self.boundaries.keys()
     
 
-    def getFluxInner(self, material, volume, face_normal,  neighbour_vector):
+    def getFluxInner(self, material, face_normal,  neighbour_vector):
         gamma = material.getProperty("gamma")
 
 
@@ -34,6 +34,25 @@ class HeatTransfer(Physics):
         coeff_const = 0
 
         return coeff_mid, coeff_neighbour, coeff_const
+    
+    def getFluxBoundary(self, boundary, material, face_normal,  neighbour_vector):
+        gamma = material.getProperty("gamma")
+
+        if boundary.type =="Dirichlet":
+            Fb, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+            # J = gamma * dot(grad(phi), Sb) =gamma*{ (Fc*phi_c+Fb*phi_b).x*Sb.x + (Fc*phi_c+Fb*phi_b).y*Sb.y } = gamma*{  Jc*phi_c + Je*phi_b }
+
+            Jc = Fc*face_normal
+            Jb = Fb*face_normal
+
+            # Division by two is due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
+            coeff_mid = gamma*Jc/2 
+            coeff_neighbour = 0
+            coeff_const = gamma*Jb/2*boundary.value
+
+            return coeff_mid, coeff_neighbour, coeff_const
+        else:
+            raise AttributeError("Boundary condition not supported")
     
     def _Gradient(self, neighbour_vector):
         # grad(phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
