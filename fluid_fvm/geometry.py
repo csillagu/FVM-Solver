@@ -35,8 +35,11 @@ class Assembly():
         return names
     
     def getLineNames(self):
-        names =[l.name for l in [p.lines for p in [self.base_polygon]+self.polygon_list]]
+        names = [l.name for p in [self.base_polygon]+self.polygon_list for l in p.lines]
         return names
+    
+    def getBaseLineNames(self):
+        return [l.name for l in self.base_polygon.lines]
 
     def _namePolygons(self):
         self.base_polygon.setName("Polygon_0")
@@ -189,14 +192,9 @@ class Line():
     def getNormal(self):
         dx = self.p2.x-self.p1.x
         dy = self.p2.y-self.p1.y
-        l = np.sqrt((dx)**2+(dy)**2)
-        return Vector(dy/l, -dx/l)
+        return Vector(dy, -dx)
     
-    def getLength(self):
-        dx = self.p2.x-self.p1.x
-        dy = self.p2.y-self.p1.y
-        l = np.sqrt((dx)**2+(dy)**2)
-        return l
+
     
     def getCenter(self):
         return Vector(sum([self.p1.x, self.p2.x])/2, sum([self.p1.y, self.p2.y])/2)
@@ -223,4 +221,7 @@ class Vector():
     def __sub__(self, other):
         #self-other
         return Vector(self.x-other.x, self.y-other.y)
+    
+    def __mul__(self, other):
+        return self.x*other.x+self.y*other.y
 

@@ -3,6 +3,7 @@ class Component():
 
     def __init__(self) -> None:
         self.materials = []
+        self.mesh_exists = False
         self.material_connectivity ={}
 
     def setAssembly(self, a):
@@ -13,11 +14,15 @@ class Component():
             self.materials.append(material)
         self.material_connectivity[name] = material.name
     
-    def plot(self, ax):
+    def plot(self, ax, mesh=False):
         colorMap = dict( (p_name,  self._findMaterialByName( self.material_connectivity[p_name]).getProperty("color")) for p_name in self.material_connectivity )
         #Poly1 : mat1.name, poly2_mat2.name
-        print(colorMap)
+        #print(colorMap)
         self.assembly.plot(ax,colorMap=colorMap)
+
+        if self.mesh_exists and mesh:
+            self.mesh.plotMesh(ax)
+
 
     def _findMaterialByName(self, name):
         for mat in self.materials:
@@ -25,6 +30,15 @@ class Component():
                 return mat
         return None
 
+    def setMesh(self, m):
+        self.mesh_exists = True
+        self.mesh = m
+        self.mesh.constructMesh(self.assembly.base_polygon)
+
+    def setPhysics(self, p):
+        self.physics = p
+
+    
 
 class Material():
     def __init__(self, name, **kvargs) -> None:

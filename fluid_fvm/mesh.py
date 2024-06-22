@@ -15,12 +15,11 @@ class RectangularConfig(MeshConfig):
     #  y-1,x-1  	y-1,x                y-1, x+1,
     #
 
-    def __init__(self, yNum, xNum, snapLines) -> None:
+    def __init__(self, yNum, xNum) -> None:
         self.fxNum =xNum
         self.fyNum = yNum
         self.vxNum =xNum-1
         self.vyNum = yNum-1
-        self.snapLines = snapLines
         self.faceMesh = np.zeros((self.fyNum ,self.fxNum),dtype=MeshPoint,)
         self.volumeMesh = np.zeros((self.vyNum, self.vxNum),dtype=MeshPoint,)
         self.connections = []
@@ -115,15 +114,24 @@ class RectangularConfig(MeshConfig):
 
         thisNode = self.getVNode(mathVIdx=mathVIdx)
         nodes = self.getNeighbouringVolumes(mathVIdx=mathVIdx)
-
+        face_lines = self.getNeighbouringFaceLines(mathVIdx=mathVIdx)
         vects = []
-        for n in nodes:
+        for idx,n in enumerate(nodes):
             if not n:
-                vects.append(n)
+                # Boundary face
+                vects.append(self._getBoundaryDistance(face_lines[idx], thisNode))
             else:
+                # Inner face
                 vects.append(self.getVNode(n).toVector()-thisNode.toVector())
         return vects
-    
+    def _getBoundaryDistance(self, faceline, thisNode):
+
+        p1 = np.array([faceline.p1.x, faceline.p1.y])
+        p2 = np.array([faceline.p2.x, faceline.p2.y])
+        p3 = np.array([thisNode.x, thisNode.y])
+        dist = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
+        l_line = np.sqrt(faceline.getNormal().x**2+faceline.getNormal().y**2)
+        return geo.Vector(faceline.getNormal().x*dist/l_line, faceline.getNormal().y*dist/l_line)
     # Face functions
     def geo2mathFace(self, geoFIdx):
         # y,x
