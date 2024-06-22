@@ -35,6 +35,9 @@ class Component():
         self.mesh = m
         self.mesh.constructMesh(self.assembly.base_polygon)
 
+    def setPhysics(self, p):
+        self.physics = p
+
     
 
 class Material():
