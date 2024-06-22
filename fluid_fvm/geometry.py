@@ -1,3 +1,5 @@
+import numpy as np
+
 class Assembly():
     def __init__(self, base_polygon, polygon_list) -> None:
         self.polygon_list = polygon_list
@@ -90,6 +92,10 @@ class Polygon():
                 self.lines[p].setName("Line_"+str(next_name))
                 next_name+=1
         return self.lines, next_name
+    
+    def centerMass(self):
+        points_x, points_y = self.getPointsXY()
+        return Vector(sum(points_x)/len(points_x), sum(points_y)/len(points_y))
 
     def isPointInside(self, point):
 
@@ -173,9 +179,31 @@ class Line():
     def __eq__(self, other: object) -> bool:
         
         return (self.p1 == other.p1) and (self.p2 == other.p2)
+    
+    def isPerpendicular(self, line2):
+        vec1 = [self.p2.x-self.p1.x, self.p2.y-self.p1.y]
+        vec2 = [line2.p2.x-line2.p1.x, line2.p2.y-line2.p1.y]
+
+        return vec1[0]*vec2[0]+vec1[1]*vec2[1] == 0
+    
+    def getNormal(self):
+        dx = self.p2.x-self.p1.x
+        dy = self.p2.y-self.p1.y
+        l = np.sqrt((dx)**2+(dy)**2)
+        return Vector(dy/l, -dx/l)
+    
+    def getLength(self):
+        dx = self.p2.x-self.p1.x
+        dy = self.p2.y-self.p1.y
+        l = np.sqrt((dx)**2+(dy)**2)
+        return l
+    
+    def getCenter(self):
+        return Vector(sum([self.p1.x, self.p2.x])/2, sum([self.p1.y, self.p2.y])/2)
 
 
-class Point():
+
+class Vector():
     def __init__(self, x, y) -> None:
         self.x = x
         self.y = y
@@ -186,6 +214,13 @@ class Point():
     def plot(self, ax, fmt = "bx"):
         ax.plot(self.x, self.y,fmt)
 
+    def plotAsVector(self, ax, vect_0 = (0,0), color = "b", scale = 1):
+        ax.arrow(vect_0.x,vect_0.y,self.x*scale,self.y*scale, color=color)
+    
+
     def __eq__(self, other: object) -> bool:
         return (self.x == other.x) and (self.y == other.y)
+    def __sub__(self, other):
+        #self-other
+        return Vector(self.x-other.x, self.y-other.y)
 
