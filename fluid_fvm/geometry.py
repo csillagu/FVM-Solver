@@ -183,6 +183,29 @@ class Line():
         
         return (self.p1 == other.p1) and (self.p2 == other.p2)
     
+    def isPointOnLine(self, p):
+        a = self.p1
+        b = self.p2
+        crossproduct = (p.y - a.y) * (b.x - a.x) - (p.x - a.x) * (b.y - a.y)
+
+        # compare versus epsilon for floating point values, or != 0 if using integers
+        if abs(crossproduct) > 1e-3:
+            return False
+
+        dotproduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y)*(b.y - a.y)
+        if dotproduct < 0:
+            return False
+
+        squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y)
+        if dotproduct > squaredlengthba:
+            return False
+
+        return True
+    
+    def isLineOnThisLine(self, line):
+        #Checks if "line" is on this line
+        return self.isPointOnLine(line.p1) and self.isPointOnLine(line.p2)
+    
     def isPerpendicular(self, line2):
         vec1 = [self.p2.x-self.p1.x, self.p2.y-self.p1.y]
         vec2 = [line2.p2.x-line2.p1.x, line2.p2.y-line2.p1.y]
