@@ -117,7 +117,7 @@ class RectangularConfig(MeshConfig):
         face_lines = self.getNeighbouringFaceLines(mathVIdx=mathVIdx)
         vects = []
         for idx,n in enumerate(nodes):
-            if not n:
+            if n == []:
                 # Boundary face
                 vects.append(self._getBoundaryDistance(face_lines[idx], thisNode))
             else:
