@@ -90,7 +90,77 @@ class HeatTransfer(Physics):
         else:
             raise AttributeError("Boundary condition not supported")
     
+class CouetteFlow(Physics):
+    def __init__(self, assembly, boundaries, flowDirectionUnitVector) -> None:
+        super().__init__()
+        self.flowDirection = flowDirectionUnitVector
+        self.flowNormal = geo.Vector(flowDirectionUnitVector.y, -flowDirectionUnitVector.x)
+        self.assembly = assembly
+        self.defineBoundaries(boundaries)
+
+    def defineBoundaries(self, bcdict):
+        assert(set(bcdict.keys()).issubset(self.assembly.getLineNames()))
+        assert(set(bcdict.keys()).issuperset(self.assembly.getBaseLineNames()))
+        self.boundaries = bcdict
+    def isBoundary(self, name):
+        return name in self.boundaries.keys()
     
+
+    def getFluxInner(self, material, face_normal,  neighbour_vector):
+        mu = material.getProperty("mu")
+
+
+
+        Fe, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+        # J = mu * dot(grad(phi), Se) =gamma*{ (Fc*phi_c+Fe*phi_e).x*Se.x + (Fc*phi_c+Fe*phi_e).y*Se.y } = gamma*{  Jc*phi_c + Je*phi_e } 
+        face_dir_corr = (face_normal*self.flowNormal)
+        
+        Jc = Fc*face_normal*abs(face_dir_corr)
+        Je = Fe*face_normal*abs(face_dir_corr)
+        #print("Jc, Je")
+        #print(Jc)
+        #print(Je)
+        #print("neighbour vetor: "+str(neighbour_vector.x)+ " y "+str(neighbour_vector.y))
+
+        coeff_mid = mu*Jc
+        coeff_neighbour = mu*Je
+        coeff_const = 0
+
+        return coeff_mid, coeff_neighbour, coeff_const
+    
+    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector):
+        mu = material.getProperty("mu")
+
+        boundary =self.boundaries[boundary_face_name]
+
+        if boundary.type =="Dirichlet":
+            if abs(face_normal*self.flowNormal) <1e-3:
+                raise AttributeError("Dirichlet boundaries must be parallel to flow")
+            Fb, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+            # J = gamma * dot(grad(phi), Sb) =gamma*{ (Fc*phi_c+Fb*phi_b).x*Sb.x + (Fc*phi_c+Fb*phi_b).y*Sb.y } = gamma*{  Jc*phi_c + Je*phi_b }
+
+            Jc = Fc*face_normal
+            Jb = Fb*face_normal
+
+            # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
+            # Is taken care of in the mesh class
+            coeff_mid = mu*Jc
+            coeff_neighbour = 0
+            coeff_const = -mu*Jb*boundary.value
+
+            return coeff_mid, coeff_neighbour, coeff_const
+        elif boundary.type == "Neumann":
+            if abs(face_normal*self.flowNormal) >1e-3:
+                raise AttributeError("Neumann boundaries must be perpendicular to flow")
+            face_length = np.sqrt(face_normal.x**2+face_normal.y**2)
+            coeff_mid = 0
+            coeff_neighbour = 0
+            coeff_const =  boundary.value * face_length
+            return coeff_mid, coeff_neighbour, coeff_const
+        else:
+            raise AttributeError("Boundary condition not supported")
+    
+
 class Boundary():
     def __init__(self, type, value) -> None:
         self.type = type
