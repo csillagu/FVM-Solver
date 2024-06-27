@@ -7,6 +7,26 @@ class Physics():
     def getFluxBoundary(self):
         pass
 
+    def _Gradient(self, neighbour_vector):
+        # grad(phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
+        # (diffx and y are the x and y components of the vector pointing from the current to the neighbouring face)
+        # If diff_x or y is 0 the respective component of the gradient is zero
+        if neighbour_vector.x == 0:
+            comp_x = 0
+        else:
+            comp_x = 1/neighbour_vector.x
+        
+
+        if neighbour_vector.y == 0:
+            comp_y = 0
+        else:
+            comp_y = 1/neighbour_vector.y
+
+        Fc = geo.Vector(-(comp_x), -(comp_y))
+        Fe = geo.Vector((comp_x), (comp_y))
+        return Fc,Fe
+
+
 class HeatTransfer(Physics):
     def __init__(self, assembly, boundaries) -> None:
         super().__init__()
@@ -70,25 +90,7 @@ class HeatTransfer(Physics):
         else:
             raise AttributeError("Boundary condition not supported")
     
-    def _Gradient(self, neighbour_vector):
-        # grad(phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
-        # (diffx and y are the x and y components of the vector pointing from the current to the neighbouring face)
-        # If diff_x or y is 0 the respective component of the gradient is zero
-        if neighbour_vector.x == 0:
-            comp_x = 0
-        else:
-            comp_x = 1/neighbour_vector.x
-        
-
-        if neighbour_vector.y == 0:
-            comp_y = 0
-        else:
-            comp_y = 1/neighbour_vector.y
-
-        Fc = geo.Vector(-(comp_x), -(comp_y))
-        Fe = geo.Vector((comp_x), (comp_y))
-        return Fc,Fe
-
+    
 class Boundary():
     def __init__(self, type, value) -> None:
         self.type = type
