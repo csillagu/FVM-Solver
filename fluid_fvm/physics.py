@@ -2,7 +2,10 @@ import numpy as np
 import fluid_fvm.geometry as geo
 
 class Physics():
-    pass
+    def getFluxInner(self):
+        pass
+    def getFluxBoundary(self):
+        pass
 
 class HeatTransfer(Physics):
     def __init__(self, assembly, boundaries) -> None:
@@ -28,6 +31,10 @@ class HeatTransfer(Physics):
 
         Jc = Fc*face_normal
         Je = Fe*face_normal
+        #print("Jc, Je")
+        #print(Jc)
+        #print(Je)
+        #print("neighbour vetor: "+str(neighbour_vector.x)+ " y "+str(neighbour_vector.y))
 
         coeff_mid = gamma*Jc
         coeff_neighbour = gamma*Je
@@ -51,7 +58,7 @@ class HeatTransfer(Physics):
             # Is taken care of in the mesh class
             coeff_mid = gamma*Jc
             coeff_neighbour = 0
-            coeff_const = gamma*Jb*boundary.value
+            coeff_const = -gamma*Jb*boundary.value
 
             return coeff_mid, coeff_neighbour, coeff_const
         elif boundary.type == "Neumann":
@@ -68,21 +75,18 @@ class HeatTransfer(Physics):
         # (diffx and y are the x and y components of the vector pointing from the current to the neighbouring face)
         # If diff_x or y is 0 the respective component of the gradient is zero
         if neighbour_vector.x == 0:
-            diff_x = 0.1
-            corr_x = 0
+            comp_x = 0
         else:
-            diff_x = neighbour_vector.x
-            corr_x = 1
+            comp_x = 1/neighbour_vector.x
+        
 
         if neighbour_vector.y == 0:
-            diff_y = 0.1
-            corr_y = 0
+            comp_y = 0
         else:
-            diff_y = neighbour_vector.y
-            corr_y = 1  
+            comp_y = 1/neighbour_vector.y
 
-        Fc = geo.Vector(-(1/diff_x*corr_x), -(1/diff_y*corr_y))
-        Fe = geo.Vector((1/diff_x*corr_x), (1/diff_y*corr_y))
+        Fc = geo.Vector(-(comp_x), -(comp_y))
+        Fe = geo.Vector((comp_x), (comp_y))
         return Fc,Fe
 
 class Boundary():

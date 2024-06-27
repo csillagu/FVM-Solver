@@ -1,7 +1,16 @@
 import numpy as np
 import fluid_fvm.geometry as geo
 class MeshConfig():
-    pass
+    def getVNode(self):
+        pass
+            
+    def getNeigbouringVolumeVectors(self):
+        pass
+    def getNeighbouringFaceLines(self):
+        pass
+
+    def getNeighbouringVolumes(self):
+        pass
 
 
 class RectangularConfig(MeshConfig):
@@ -117,7 +126,7 @@ class RectangularConfig(MeshConfig):
         face_lines = self.getNeighbouringFaceLines(mathVIdx=mathVIdx)
         vects = []
         for idx,n in enumerate(nodes):
-            if not n:
+            if n == []:
                 # Boundary face
                 vects.append(self._getBoundaryDistance(face_lines[idx], thisNode))
             else:

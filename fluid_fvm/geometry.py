@@ -52,6 +52,14 @@ class Assembly():
         for p in range(len(self.polygon_list)):
             newlines,previous_line_num = self.polygon_list[p].setLineNames(previous_line_num, previous_names) 
             previous_names=previous_names+newlines
+    
+    def getCoincidentLineName(self, line):
+        for p in [self.base_polygon]+self.polygon_list:
+            linename = p.getCoincidentLineName(line=line)
+            if linename is not None:
+                return linename
+        
+        return None
 
 class Polygon():
     def __init__(self, point_list) -> None:
@@ -160,6 +168,13 @@ class Polygon():
         # Return the value of the inside flag
 
         return inside
+    
+    def getCoincidentLineName(self, line):
+        for l in self.lines:
+            if l.isLineOnThisLine(line=line):
+                return l.name
+        
+        return None
 
 
 
@@ -182,6 +197,29 @@ class Line():
     def __eq__(self, other: object) -> bool:
         
         return (self.p1 == other.p1) and (self.p2 == other.p2)
+    
+    def isPointOnLine(self, p):
+        a = self.p1
+        b = self.p2
+        crossproduct = (p.y - a.y) * (b.x - a.x) - (p.x - a.x) * (b.y - a.y)
+
+        # compare versus epsilon for floating point values, or != 0 if using integers
+        if abs(crossproduct) > 1e-3:
+            return False
+
+        dotproduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y)*(b.y - a.y)
+        if dotproduct < -1e-3:
+            return False
+
+        squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y)
+        if dotproduct > squaredlengthba:
+            return False
+
+        return True
+    
+    def isLineOnThisLine(self, line):
+        #Checks if "line" is on this line
+        return self.isPointOnLine(line.p1) and self.isPointOnLine(line.p2)
     
     def isPerpendicular(self, line2):
         vec1 = [self.p2.x-self.p1.x, self.p2.y-self.p1.y]
