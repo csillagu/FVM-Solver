@@ -1,7 +1,16 @@
 import numpy as np
 import fluid_fvm.geometry as geo
 class MeshConfig():
-    pass
+    def getVNode(self):
+        pass
+            
+    def getNeigbouringVolumeVectors(self):
+        pass
+    def getNeighbouringFaceLines(self):
+        pass
+
+    def getNeighbouringVolumes(self):
+        pass
 
 
 class RectangularConfig(MeshConfig):

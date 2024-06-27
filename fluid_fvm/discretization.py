@@ -22,8 +22,8 @@ class LinearFullDiscretizer(Discretizer):
         
 
     def discretize(self):
-        physics: ph.HeatTransfer = self.component.physics
-        mesh: ms.RectangularConfig = self.component.mesh
+        physics: ph.Physics = self.component.physics
+        mesh: ms.MeshConfig = self.component.mesh
         geometry: geo.Assembly =self.component.assembly
 
         for node in range(self.element_num):

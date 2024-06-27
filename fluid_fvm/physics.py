@@ -2,7 +2,10 @@ import numpy as np
 import fluid_fvm.geometry as geo
 
 class Physics():
-    pass
+    def getFluxInner(self):
+        pass
+    def getFluxBoundary(self):
+        pass
 
 class HeatTransfer(Physics):
     def __init__(self, assembly, boundaries) -> None:
