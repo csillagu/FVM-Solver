@@ -34,6 +34,7 @@ class LinearFullDiscretizer(Discretizer):
             neighbour_faces = mesh.getNeighbouringFaceLines(node)
 
             neighbour_node_nums = mesh.getNeighbouringVolumes(node)
+            node_volume = mesh.getAreaOfElement(node)
 
             self_coefficient = 0
             neighbour_coefficients = np.zeros((len(neighbour_node_nums),1))
@@ -42,10 +43,13 @@ class LinearFullDiscretizer(Discretizer):
             for neighbour in range(len(neighbour_node_nums)):
                 neighbour_line_name = geometry.getCoincidentLineName(neighbour_faces[neighbour])
                 if neighbour_node_nums[neighbour] == []:
-                    d_coeffs = physics.getFluxBoundary(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), neighbour_vector=neighbour_nodes[neighbour], boundary_face_name=neighbour_line_name)
+                    d_coeffs = physics.getFluxBoundary(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
+                                                       neighbour_vector=neighbour_nodes[neighbour], 
+                                                       boundary_face_name=neighbour_line_name, volume = node_volume)
                 else:
                     #print("Node:"+str(node) +"  Neighbour: "+str(neighbour) + " Nwighbour idx: " + str(neighbour_node_nums[neighbour]))
-                    d_coeffs = physics.getFluxInner(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), neighbour_vector=neighbour_nodes[neighbour])
+                    d_coeffs = physics.getFluxInner(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
+                                                    neighbour_vector=neighbour_nodes[neighbour], volume = node_volume)
                 self_coefficient += d_coeffs[0]
                 neighbour_coefficients[neighbour] += d_coeffs[1]
                 local_B_coefficient += d_coeffs[2]

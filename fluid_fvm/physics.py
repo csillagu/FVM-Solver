@@ -41,7 +41,7 @@ class HeatTransfer(Physics):
         return name in self.boundaries.keys()
     
 
-    def getFluxInner(self, material, face_normal,  neighbour_vector):
+    def getFluxInner(self, material, face_normal,  neighbour_vector, volume):
         gamma = material.getProperty("gamma")
 
 
@@ -62,7 +62,7 @@ class HeatTransfer(Physics):
 
         return coeff_mid, coeff_neighbour, coeff_const
     
-    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector):
+    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector, volume):
         gamma = material.getProperty("gamma")
 
         boundary =self.boundaries[boundary_face_name]
