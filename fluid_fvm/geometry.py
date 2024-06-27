@@ -52,6 +52,14 @@ class Assembly():
         for p in range(len(self.polygon_list)):
             newlines,previous_line_num = self.polygon_list[p].setLineNames(previous_line_num, previous_names) 
             previous_names=previous_names+newlines
+    
+    def getCoincidentLineName(self, line):
+        for p in [self.base_polygon]+self.polygon_list:
+            linename = p.getCoincidentLineName(line=line)
+            if linename is not None:
+                return linename
+        
+        return None
 
 class Polygon():
     def __init__(self, point_list) -> None:
@@ -160,6 +168,13 @@ class Polygon():
         # Return the value of the inside flag
 
         return inside
+    
+    def getCoincidentLineName(self, line):
+        for l in self.lines:
+            if l.isLineOnThisLine(line=line):
+                return l.name
+        
+        return None
 
 
 
@@ -193,7 +208,7 @@ class Line():
             return False
 
         dotproduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y)*(b.y - a.y)
-        if dotproduct < 0:
+        if dotproduct < -1e-3:
             return False
 
         squaredlengthba = (b.x - a.x)*(b.x - a.x) + (b.y - a.y)*(b.y - a.y)
