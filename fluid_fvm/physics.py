@@ -7,6 +7,9 @@ class Physics():
     def getFluxBoundary(self):
         pass
 
+    def getSourceValue(self, point, volume):
+        return 0
+
     def _Gradient(self, neighbour_vector):
         # grad(phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
         # (diffx and y are the x and y components of the vector pointing from the current to the neighbouring face)
@@ -41,7 +44,7 @@ class HeatTransfer(Physics):
         return name in self.boundaries.keys()
     
 
-    def getFluxInner(self, material, face_normal,  neighbour_vector, volume):
+    def getFluxInner(self, material, face_normal,  neighbour_vector):
         gamma = material.getProperty("gamma")
 
 
@@ -62,7 +65,7 @@ class HeatTransfer(Physics):
 
         return coeff_mid, coeff_neighbour, coeff_const
     
-    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector, volume):
+    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector):
         gamma = material.getProperty("gamma")
 
         boundary =self.boundaries[boundary_face_name]

@@ -45,11 +45,11 @@ class LinearFullDiscretizer(Discretizer):
                 if neighbour_node_nums[neighbour] == []:
                     d_coeffs = physics.getFluxBoundary(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
                                                        neighbour_vector=neighbour_nodes[neighbour], 
-                                                       boundary_face_name=neighbour_line_name, volume = node_volume)
+                                                       boundary_face_name=neighbour_line_name)
                 else:
                     #print("Node:"+str(node) +"  Neighbour: "+str(neighbour) + " Nwighbour idx: " + str(neighbour_node_nums[neighbour]))
                     d_coeffs = physics.getFluxInner(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
-                                                    neighbour_vector=neighbour_nodes[neighbour], volume = node_volume)
+                                                    neighbour_vector=neighbour_nodes[neighbour])
                 self_coefficient += d_coeffs[0]
                 neighbour_coefficients[neighbour] += d_coeffs[1]
                 local_B_coefficient += d_coeffs[2]
@@ -58,5 +58,5 @@ class LinearFullDiscretizer(Discretizer):
                 self.Amrx[node, neighbour_node_nums[neighbour]] = neighbour_coefficients[neighbour]
 
             self.Amrx[node, node] = self_coefficient
-            self.Bmrx[node,0] = local_B_coefficient
+            self.Bmrx[node,0] = local_B_coefficient+physics.getSourceValue(point=node_point, volume = node_volume)
             
