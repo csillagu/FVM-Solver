@@ -10,8 +10,10 @@ class Physics():
     def getSourceValue(self, point, volume):
         return 0
 
-    def _Gradient(self, neighbour_vector):
-        # grad(phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
+    def _DivGrad(self, neighbour_vector):
+        # Calculates the normalized flux (grad(Phi)) in the given direction for PDE-s in the form of div(grad(Phi)) = c
+
+        # grad(Phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
         # (diffx and y are the x and y components of the vector pointing from the current to the neighbouring face)
         # If diff_x or y is 0 the respective component of the gradient is zero
         if neighbour_vector.x == 0:
@@ -49,7 +51,7 @@ class HeatTransfer(Physics):
 
 
 
-        Fe, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+        Fe, Fc = self._DivGrad(neighbour_vector=neighbour_vector)
         # J = gamma * dot(grad(phi), Se) =gamma*{ (Fc*phi_c+Fe*phi_e).x*Se.x + (Fc*phi_c+Fe*phi_e).y*Se.y } = gamma*{  Jc*phi_c + Je*phi_e } 
 
         Jc = Fc*face_normal
@@ -71,7 +73,7 @@ class HeatTransfer(Physics):
         boundary =self.boundaries[boundary_face_name]
 
         if boundary.type =="Dirichlet":
-            Fb, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+            Fb, Fc = self._DivGrad(neighbour_vector=neighbour_vector)
             # J = gamma * dot(grad(phi), Sb) =gamma*{ (Fc*phi_c+Fb*phi_b).x*Sb.x + (Fc*phi_c+Fb*phi_b).y*Sb.y } = gamma*{  Jc*phi_c + Je*phi_b }
 
             Jc = Fc*face_normal
@@ -114,7 +116,7 @@ class CouetteFlow(Physics):
 
 
 
-        Fe, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+        Fe, Fc = self._DivGrad(neighbour_vector=neighbour_vector)
         # J = mu * dot(grad(phi), Se) =gamma*{ (Fc*phi_c+Fe*phi_e).x*Se.x + (Fc*phi_c+Fe*phi_e).y*Se.y } = gamma*{  Jc*phi_c + Je*phi_e } 
         face_dir_corr = (face_normal*self.flowNormal)
         
@@ -139,7 +141,7 @@ class CouetteFlow(Physics):
         if boundary.type =="Dirichlet":
             if abs(face_normal*self.flowNormal) <1e-3:
                 raise AttributeError("Dirichlet boundaries must be parallel to flow")
-            Fb, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+            Fb, Fc = self._DivGrad(neighbour_vector=neighbour_vector)
             # J = gamma * dot(grad(phi), Sb) =gamma*{ (Fc*phi_c+Fb*phi_b).x*Sb.x + (Fc*phi_c+Fb*phi_b).y*Sb.y } = gamma*{  Jc*phi_c + Je*phi_b }
 
             Jc = Fc*face_normal
@@ -185,7 +187,7 @@ class PoissonFlow(Physics):
 
 
 
-        Fe, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+        Fe, Fc = self._DivGrad(neighbour_vector=neighbour_vector)
         # J = mu * dot(grad(phi), Se) =gamma*{ (Fc*phi_c+Fe*phi_e).x*Se.x + (Fc*phi_c+Fe*phi_e).y*Se.y } = gamma*{  Jc*phi_c + Je*phi_e } 
         face_dir_corr = (face_normal*self.flowNormal)
         
@@ -210,7 +212,7 @@ class PoissonFlow(Physics):
         if boundary.type =="Dirichlet":
             if abs(face_normal*self.flowNormal) <1e-3:
                 raise AttributeError("Dirichlet boundaries must be parallel to flow")
-            Fb, Fc = self._Gradient(neighbour_vector=neighbour_vector)
+            Fb, Fc = self._DivGrad(neighbour_vector=neighbour_vector)
             # J = gamma * dot(grad(phi), Sb) =gamma*{ (Fc*phi_c+Fb*phi_b).x*Sb.x + (Fc*phi_c+Fb*phi_b).y*Sb.y } = gamma*{  Jc*phi_c + Je*phi_b }
 
             Jc = Fc*face_normal
