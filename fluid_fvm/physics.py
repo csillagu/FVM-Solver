@@ -7,13 +7,13 @@ class Physics():
     def getFluxBoundary(self):
         pass
 
-    def getSourceValue(self, point, volume):
+    def getSourceValue(self, point, volume, variable):
         return 0
 
     def _DivGrad(self, neighbour_vector):
-        # Calculates the normalized flux (grad(Phi)) in the given direction for PDE-s in the form of div(grad(Phi)) = c
+        # Calculates the normalized flux in the middle of the neighbour_vector (d) (grad(Phi)|d) in the given direction for PDE-s in the form of div(grad(Phi)) = c
 
-        # grad(Phi) = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
+        # grad(Phi)|d = Vector(  (phi_e-phi_c)/diff_x, (phi_e-phi_c)/diff_y ) =  Fc*phi_c+Fe*phi_e  
         # (diffx and y are the x and y components of the vector pointing from the current to the neighbouring face)
         # If diff_x or y is 0 the respective component of the gradient is zero
         if neighbour_vector.x == 0:
@@ -46,7 +46,7 @@ class HeatTransfer(Physics):
         return name in self.boundaries.keys()
     
 
-    def getFluxInner(self, material, face_normal,  neighbour_vector):
+    def getFluxInner(self, material, face_normal,  neighbour_vector, variable):
         gamma = material.getProperty("gamma")
 
 
@@ -67,7 +67,7 @@ class HeatTransfer(Physics):
 
         return coeff_mid, coeff_neighbour, coeff_const
     
-    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector):
+    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector, variable):
         gamma = material.getProperty("gamma")
 
         boundary =self.boundaries[boundary_face_name]
@@ -111,7 +111,7 @@ class CouetteFlow(Physics):
         return name in self.boundaries.keys()
     
 
-    def getFluxInner(self, material, face_normal,  neighbour_vector):
+    def getFluxInner(self, material, face_normal,  neighbour_vector, variable):
         mu = material.getProperty("mu")
 
 
@@ -133,7 +133,7 @@ class CouetteFlow(Physics):
 
         return coeff_mid, coeff_neighbour, coeff_const
     
-    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector):
+    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector, variable):
         mu = material.getProperty("mu")
 
         boundary =self.boundaries[boundary_face_name]
@@ -165,7 +165,7 @@ class CouetteFlow(Physics):
         else:
             raise AttributeError("Boundary condition not supported")
     
-class PoissonFlow(Physics):
+class PoissonFlowFixP(Physics):
     def __init__(self, assembly, boundaries, flowDirectionUnitVector, dpdx) -> None:
         super().__init__()
         self.flowDirection = flowDirectionUnitVector
@@ -182,7 +182,7 @@ class PoissonFlow(Physics):
         return name in self.boundaries.keys()
     
 
-    def getFluxInner(self, material, face_normal,  neighbour_vector):
+    def getFluxInner(self, material, face_normal,  neighbour_vector, variable):
         mu = material.getProperty("mu")
 
 
@@ -204,7 +204,7 @@ class PoissonFlow(Physics):
 
         return coeff_mid, coeff_neighbour, coeff_const
     
-    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector):
+    def getFluxBoundary(self, boundary_face_name, material, face_normal,  neighbour_vector, variable):
         mu = material.getProperty("mu")
 
         boundary =self.boundaries[boundary_face_name]
@@ -236,7 +236,7 @@ class PoissonFlow(Physics):
         else:
             raise AttributeError("Boundary condition not supported")
     
-    def getSourceValue(self, point, volume):
+    def getSourceValue(self, point, volume, variable):
         return self.dpdx*volume
     
 
