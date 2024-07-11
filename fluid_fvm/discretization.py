@@ -37,11 +37,13 @@ class LinearFullDiscretizer(Discretizer):
 
             neighbour_node_nums = mesh.getNeighbouringVolumes(node)
             node_volume = mesh.getAreaOfElement(node)
+            row_idx = node*self.num_variables
+            
 
             for variable in range(self.num_variables):
-                self_coefficient = np.zeros((1, self.num_variables))
-                neighbour_coefficients = np.zeros((len(neighbour_node_nums),self.num_variables))
-                local_B_coefficient = 0
+                self_coefficient = 0.0
+                neighbour_coefficients = np.zeros((len(neighbour_node_nums),self.num_variables), dtype="float64")
+                local_B_coefficient = 0.0
                 for neighbour in range(len(neighbour_node_nums)):
                     neighbour_line_name = geometry.getCoincidentLineName(neighbour_faces[neighbour])
                     if neighbour_node_nums[neighbour] == []:
@@ -49,11 +51,16 @@ class LinearFullDiscretizer(Discretizer):
                                                         neighbour_vector=neighbour_nodes[neighbour], 
                                                         boundary_face_name=neighbour_line_name, variable = variable)
                     else:
-                        #print("Node:"+str(node) +"  Neighbour: "+str(neighbour) + " Nwighbour idx: " + str(neighbour_node_nums[neighbour]))
+                        
                         d_coeffs = physics.getFluxInner(material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
                                                         neighbour_vector=neighbour_nodes[neighbour], variable = variable)
+                    print("Node:"+str(node) +"  Neighbour: "+str(neighbour) + " Nwighbour idx: " + str(neighbour_node_nums[neighbour]))
+                    print("Self"+str(d_coeffs[0]))
+                    print("Neighbour:"+str(d_coeffs[1]))
+                    print("Const:"+str(d_coeffs[2]))
+                    print("---------------")
                     self_coefficient += d_coeffs[0]
-                    neighbour_coefficients[neighbour, :] += d_coeffs[1]
+                    neighbour_coefficients[neighbour, :] = neighbour_coefficients[neighbour, :]+ d_coeffs[1]
                     local_B_coefficient += d_coeffs[2]
 
                 for neighbour in range(len(neighbour_node_nums)):
@@ -62,8 +69,11 @@ class LinearFullDiscretizer(Discretizer):
                         neighbour_starting_num =neighbour_node_nums[neighbour]*self.num_variables
                         # print(neighbour_starting_num)
                         # print(neighbour_starting_num+self.num_variables)
-                        self.Amrx[node+variable, neighbour_starting_num:(neighbour_starting_num+self.num_variables)] = neighbour_coefficients[neighbour, :]
-
-                self.Amrx[node+variable, node+variable] = self_coefficient
-                self.Bmrx[node+variable,0] = local_B_coefficient+physics.getSourceValue(point=node_point, volume = node_volume, variable=variable)
+                        self.Amrx[row_idx+variable, neighbour_starting_num:(neighbour_starting_num+self.num_variables)] = neighbour_coefficients[neighbour, :]
+                        
+                #print(neighbour_coefficients)
+                #print(str(row_idx)+":"+str(row_idx+self.num_variables)+"<="+str(self_coefficient))
+                #print(self.Amrx[row_idx+variable, (row_idx):(row_idx+self.num_variables)])
+                self.Amrx[row_idx+variable, (row_idx):(row_idx+self.num_variables)] = self_coefficient
+                self.Bmrx[row_idx+variable,0] = local_B_coefficient+physics.getSourceValue(point=node_point, volume = node_volume, variable=variable)
             
