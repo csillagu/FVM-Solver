@@ -27,9 +27,10 @@ class Physics():
         else:
             comp_y = 1/neighbour_vector.y
 
-        Fc = geo.Vector(-(comp_x), -(comp_y))
-        Fe = geo.Vector((comp_x), (comp_y))
-        return Fc,Fe
+        Fe = geo.Vector(-(comp_x), -(comp_y))
+        Fc = geo.Vector((comp_x), (comp_y))
+        return Fe,Fc
+    
 
 
 class HeatTransfer(Physics):
