@@ -262,4 +262,7 @@ class Vector():
     
     def __mul__(self, other):
         return self.x*other.x+self.y*other.y
+    
+    def toNpArray(self):
+        return np.array([[self.x], [self.y]])
 
