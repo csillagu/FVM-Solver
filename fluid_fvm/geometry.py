@@ -232,6 +232,15 @@ class Line():
         dy = self.p2.y-self.p1.y
         return Vector(dy, -dx)
     
+    def getLength(self):
+        dx = self.p2.x-self.p1.x
+        dy = self.p2.y-self.p1.y
+        return np.sqrt(dx**2+dy**2)
+    def getDirectionVector(self):
+        dx = self.p2.x-self.p1.x
+        dy = self.p2.y-self.p1.y
+        return Vector(dx, dy)
+    
 
     
     def getCenter(self):
