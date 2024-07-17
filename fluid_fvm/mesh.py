@@ -11,6 +11,8 @@ class MeshConfig():
 
     def getNeighbouringVolumes(self):
         pass
+    def getAreaOfElement(self):
+        pass
 
 
 class RectangularConfig(MeshConfig):
