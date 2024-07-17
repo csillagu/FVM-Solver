@@ -26,7 +26,7 @@ class RectangularConfig(MeshConfig):
     #  y-1,x-1  	y-1,x                y-1, x+1,
     #
 
-    def __init__(self, yNum, xNum) -> None:
+    def __init__(self, yNum, xNum, *args, **kvargs) -> None:
         self.fxNum =xNum
         self.fyNum = yNum
         self.vxNum =xNum-1
@@ -213,7 +213,7 @@ class RectangularSnappingConfig(MeshConfig):
     #  y-1,x-1  	y-1,x                y-1, x+1,
     #
 
-    def __init__(self, yNum, xNum, snapLines:geo.Line) -> None:
+    def __init__(self, yNum, xNum) -> None:
         # snap lines: actual lines that are part of the polygon
         self.fxNum =xNum
         self.fyNum = yNum
@@ -222,7 +222,7 @@ class RectangularSnappingConfig(MeshConfig):
         self.faceMesh = np.zeros((self.fyNum ,self.fxNum),dtype=MeshPoint,)
         self.volumeMesh = np.zeros((self.vyNum, self.vxNum),dtype=MeshPoint,)
         self.connections = []
-        self.snapLines = snapLines
+        
 
     def plotMesh(self, ax, vTexts = False, fTexts = False):
         for iy, ix in np.ndindex(self.faceMesh.shape):
@@ -245,7 +245,8 @@ class RectangularSnappingConfig(MeshConfig):
 
                 
     
-    def constructMesh(self, base):
+    def constructMesh(self, base, snapLines:geo.Line):
+        self.snapLines = snapLines
         if len(base.lines) != 4:
             raise ValueError("Base must be rectangular")
         #print(base.lines[0].isPerpendicular(base.lines[1]) and base.lines[1].isPerpendicular(base.lines[2]) and base.lines[2].isPerpendicular(base.lines[3]))
@@ -283,11 +284,10 @@ class RectangularSnappingConfig(MeshConfig):
         xLine = base.lines[offset+1]
         yPoints = self.findFpoints(self.fyNum,yLine.getLength(),ySnapPoints)
         xPoints = self.findFpoints(self.fxNum,xLine.getLength(),xSnapPoints)
-        for jidx, yPoint in enumerate(yPoints):
-            for iidx, xPoint in enumerate(xPoints):
-                self.faceMesh[iidx,jidx] = MeshPoint(xPoint, yPoint)
+        for yidx, yPoint in enumerate(yPoints):
+            for xidx, xPoint in enumerate(xPoints):
+                self.faceMesh[yidx,xidx] = MeshPoint(xPoint, yPoint)
         
-
     def findFpoints(self, fNum, length, snapPoints):
         meshpoints = [0.0]
         covered_length = 0.0
