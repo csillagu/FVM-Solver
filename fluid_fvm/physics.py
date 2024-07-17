@@ -49,7 +49,6 @@ class Physics():
 
         # Phi|d*(A_norm*e_x) = (phi_c+phi_e)/2*(A_norm*e_x) = Fc*phi_c+Fe*phi_e where e_x is the unit vector in the x direction
 
-        # normalize(A_norm*e_x) = sgn(A_norm.x*e_x.x) = sgn(A_norm.x) (-1, if x is negative, 0 if x is 0 and 1 if x positive)
         mrx = np.eye(num_variables )
         return mrx*1/2, mrx*1/2
 
@@ -314,8 +313,8 @@ class StokesFlow(Physics):
         Je_p = Fe_p*self.e_x@face_normal_np*1/1
 
         # mu*div grad u - grad p = 0
-        coeff_mid = np.array([mu*Jc_ux[0], 0,-Jc_p[0,0]])
-        coeff_neighbour = np.array([mu*Je_ux[0],0, -Je_p[0,0]])
+        coeff_mid = np.array([mu*Jc_ux[0], 0,Jc_p[0,0]])
+        coeff_neighbour = np.array([mu*Je_ux[0],0, Je_p[0,0]])
         coeff_const = 0 
 
         return coeff_mid, coeff_neighbour, coeff_const
@@ -339,8 +338,8 @@ class StokesFlow(Physics):
 
         # mu*div grad u - grad p = 0
         # coeff_u, coeff_v, coeff_p
-        coeff_mid = np.array([0, mu*Jc_uy[0,0], -Jc_p[0,0]])
-        coeff_neighbour = np.array([0, mu*Je_uy[0,0], -Je_p[0,0]])
+        coeff_mid = np.array([0, mu*Jc_uy[0,0], Jc_p[0,0]])
+        coeff_neighbour = np.array([0, mu*Je_uy[0,0], Je_p[0,0]])
         coeff_const = 0 
 
         return coeff_mid, coeff_neighbour, coeff_const
@@ -393,7 +392,7 @@ class StokesFlow(Physics):
 
             # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
             # Is taken care of in the mesh class
-            coeff_mid = np.array([mu*Jc_u[0], 0, -Jc_p[0]])
+            coeff_mid = np.array([mu*Jc_u[0], 0, Jc_p[0]])
             coeff_neighbour = np.array([0,0, 0])
             coeff_const = -mu*Jb_u[0]*boundary.value # maybe -??
 
@@ -429,7 +428,7 @@ class StokesFlow(Physics):
 
             # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
             # Is taken care of in the mesh class
-            coeff_mid = np.array([mu*Jc_u[0], 0, -Jc_p[0]])
+            coeff_mid = np.array([mu*Jc_u[0], 0, Jc_p[0]])
             coeff_neighbour = np.array([0,0, 0])
             coeff_const = mu*Jb_u[0]*0 # boundary value is 0, as there is no slip
 
@@ -457,7 +456,7 @@ class StokesFlow(Physics):
 
             # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
             # Is taken care of in the mesh class
-            coeff_mid = np.array([0,mu*Jc_u[0,0], -Jc_p[0,0]])
+            coeff_mid = np.array([0,mu*Jc_u[0,0], Jc_p[0,0]])
             coeff_neighbour = np.array([0,0, 0])
             coeff_const = mu*Jb_u[0]*0 # V_input is 0
 
@@ -493,7 +492,7 @@ class StokesFlow(Physics):
 
             # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
             # Is taken care of in the mesh class
-            coeff_mid = np.array([0, mu*Jc_u[0,0], -Jc_p[0,0]])
+            coeff_mid = np.array([0, mu*Jc_u[0,0], Jc_p[0,0]])
             coeff_neighbour = np.array([0,0, 0])
             coeff_const = mu*Jb_u[0]*0 # boundary value is 0, as there is no slip
 
