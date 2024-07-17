@@ -60,6 +60,13 @@ class Assembly():
                 return linename
         
         return None
+    def getLineByName(self, name):
+        line= [l for p in [self.base_polygon]+self.polygon_list for l in p.lines if l.name == name]
+        return line
+    
+    def getInnerPolygonLines(self):
+        lines = [l for p in self.polygon_list for l in p.lines]
+        return lines
 
 class Polygon():
     def __init__(self, point_list) -> None:
