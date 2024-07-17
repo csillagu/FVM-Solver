@@ -202,7 +202,233 @@ class RectangularConfig(MeshConfig):
         return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
         
         
+class RectangularSnappingConfig(MeshConfig):
 
+    # y+1, x-1       y+1  , x             y+1, x+1,
+    #       
+    #
+    #  y, x-1     	y,x      	    	 y, x+1,
+    #
+    #
+    #  y-1,x-1  	y-1,x                y-1, x+1,
+    #
+
+    def __init__(self, yNum, xNum, snapLines:geo.Line) -> None:
+        # snap lines: actual lines that are part of the polygon
+        self.fxNum =xNum
+        self.fyNum = yNum
+        self.vxNum =xNum-1
+        self.vyNum = yNum-1
+        self.faceMesh = np.zeros((self.fyNum ,self.fxNum),dtype=MeshPoint,)
+        self.volumeMesh = np.zeros((self.vyNum, self.vxNum),dtype=MeshPoint,)
+        self.connections = []
+        self.snapLines = snapLines
+
+    def plotMesh(self, ax, vTexts = False, fTexts = False):
+        for iy, ix in np.ndindex(self.faceMesh.shape):
+            mp = self.faceMesh[iy, ix]
+            if isinstance(mp, MeshPoint):
+                if fTexts:
+                    mp.plot(ax, text="i:"+str(iy)+" j:"+str(ix)+" mid:"+str(self.geo2mathFace((iy,ix))))
+                else:
+                    mp.plot(ax)
+        
+
+        for iy, ix in np.ndindex(self.volumeMesh.shape):
+            mp = self.volumeMesh[iy, ix]
+            if isinstance(mp, MeshPoint):
+                if vTexts:
+                    mp.plot(ax, fmt="gx", text="i:"+str(iy)+" j:"+str(ix)+" mid:"+str(self.geo2mathVolume((iy,ix))))
+                else:
+                    mp.plot(ax, fmt="gx")
+                
+
+                
+    
+    def constructMesh(self, base):
+        if len(base.lines) != 4:
+            raise ValueError("Base must be rectangular")
+        #print(base.lines[0].isPerpendicular(base.lines[1]) and base.lines[1].isPerpendicular(base.lines[2]) and base.lines[2].isPerpendicular(base.lines[3]))
+        if not (base.lines[0].isPerpendicular(base.lines[1]) and base.lines[1].isPerpendicular(base.lines[2]) and base.lines[2].isPerpendicular(base.lines[3])):
+            raise ValueError("Base must be rectangular")
+        offset = self.findXLine(base)
+        ySnapPoints, xSnapPoints = self.getPerpendicularSnapLines(base, offset)
+        self.yPoints = ySnapPoints
+        self.xPoints = xSnapPoints
+        self.constructFaceMesh(base, offset, xSnapPoints, ySnapPoints)
+        self.constructVolumeMesh()
+    def findXLine(self,base):
+        if abs(geo.Vector(1,0)*base.lines[0].getDirectionVector())<1e-3:
+            return 0
+        else:
+            return 1
+
+    def getPerpendicularSnapLines(self, base, offset):
+        yPoints = []
+        xPoints =[]
+        for line in self.snapLines:
+            if line.isPerpendicular(base.lines[offset]):
+                yPoints.append(line.p1.y)
+            elif abs(line.getDirectionVector()*base.lines[offset].getNormal())<1e-3:
+                xPoints.append(line.p1.x)
+            else:
+                raise ValueError("Snap lines must be either perpendicular or parallel to the first line of the base polynomial")
+        return yPoints, xPoints
+    
+
+
+        
+    def constructFaceMesh(self, base, offset, xSnapPoints, ySnapPoints):
+        yLine = base.lines[offset]
+        xLine = base.lines[offset+1]
+        yPoints = self.findFpoints(self.fyNum,yLine.getLength(),ySnapPoints)
+        xPoints = self.findFpoints(self.fxNum,xLine.getLength(),xSnapPoints)
+        for jidx, yPoint in enumerate(yPoints):
+            for iidx, xPoint in enumerate(xPoints):
+                self.faceMesh[iidx,jidx] = MeshPoint(xPoint, yPoint)
+        
+
+    def findFpoints(self, fNum, length, snapPoints):
+        meshpoints = [0.0]
+        covered_length = 0.0
+        all_points = fNum-2
+        snapPoints=snapPoints+[length]
+        for sp in snapPoints:
+            print(np.floor((sp-covered_length)/(length-covered_length)*all_points))
+            meshpoints.extend(np.linspace(covered_length, sp, int(np.floor((sp-covered_length)/(length-covered_length)*all_points))+2)[1:-1].tolist())
+            meshpoints.append(sp)
+            all_points = all_points-np.floor((sp-covered_length)/(length-covered_length)*all_points)-1
+            covered_length = sp
+
+        return meshpoints
+
+
+
+
+    def constructVolumeMesh(self):
+        for iy, ix in np.ndindex(self.volumeMesh.shape):
+            volPoint = geo.Polygon([geo.Vector(self.faceMesh[iy,ix].x, self.faceMesh[iy,ix].y),
+                                    geo.Vector(self.faceMesh[iy+1,ix].x, self.faceMesh[iy+1,ix].y),
+                                    geo.Vector(self.faceMesh[iy+1,ix+1].x, self.faceMesh[iy+1,ix+1].y),
+                                    geo.Vector(self.faceMesh[iy,ix+1].x, self.faceMesh[iy,ix+1].y)])
+            
+            self.volumeMesh[iy,ix] = MeshPoint(volPoint.centerMass().x, volPoint.centerMass().y)
+
+    def geo2mathVolume(self, geoVIdx):
+        # y,x
+        y = geoVIdx[0]
+        x = geoVIdx[1]
+        return y*(self.vxNum)+x
+    
+    def math2geoVolume(self, mathVIdx):
+        return (int(np.floor(mathVIdx/(self.vxNum))), mathVIdx-int(np.floor(mathVIdx/(self.vxNum)))*(self.vxNum))
+        
+    def getVolumeNodeNum(self):
+        return self.vyNum*self.vxNum
+    
+    def getVNode(self, mathVIdx):
+        return self.volumeMesh[self.math2geoVolume(mathVIdx)]
+    
+    def isValidVGeoIdx(self, geoVIdx):
+        iy = geoVIdx[0]
+        ix = geoVIdx[1]
+        return iy>=0 and ix>=0 and iy<self.vyNum and ix<self.vxNum
+    
+    def getNeighbouringVolumes(self, mathVIdx):
+        assert(mathVIdx>=0)
+        assert(mathVIdx<=self.getVolumeNodeNum())
+        geoIdx = self.math2geoVolume(mathVIdx)
+
+        iy = geoIdx[0]
+        ix = geoIdx[1]
+        ret = []
+        for iy_diff, ix_diff in [(-1,0),(0,1),(1,0),(0,-1)]:
+                if not self.isValidVGeoIdx((iy+iy_diff,ix+ix_diff)):
+                    ret.append([])
+                    continue
+                ret.append(self.geo2mathVolume((iy+iy_diff,ix+ix_diff)))
+
+        return ret
+
+    def getNeigbouringVolumeVectors(self, mathVIdx):
+
+        thisNode = self.getVNode(mathVIdx=mathVIdx)
+        nodes = self.getNeighbouringVolumes(mathVIdx=mathVIdx)
+        face_lines = self.getNeighbouringFaceLines(mathVIdx=mathVIdx)
+        vects = []
+        for idx,n in enumerate(nodes):
+            if n == []:
+                # Boundary face
+                vects.append(self._getBoundaryDistance(face_lines[idx], thisNode))
+            else:
+                # Inner face
+                vects.append(self.getVNode(n).toVector()-thisNode.toVector())
+        return vects
+    def _getBoundaryDistance(self, faceline, thisNode):
+
+        p1 = np.array([faceline.p1.x, faceline.p1.y])
+        p2 = np.array([faceline.p2.x, faceline.p2.y])
+        p3 = np.array([thisNode.x, thisNode.y])
+        dist = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
+        l_line = np.sqrt(faceline.getNormal().x**2+faceline.getNormal().y**2)
+        return geo.Vector(faceline.getNormal().x*dist/l_line, faceline.getNormal().y*dist/l_line)
+    # Face functions
+    def geo2mathFace(self, geoFIdx):
+        # y,x
+        y = geoFIdx[0]
+        x = geoFIdx[1]
+        return y*(self.fxNum)+x
+    
+    def math2geoFace(self, mathFIdx):
+        return (int(np.floor(mathFIdx/(self.fxNum))), mathFIdx-int(np.floor(mathFIdx/(self.fxNum)))*(self.fxNum))
+        
+    def getFaceNodeNum(self):
+        return self.fyNum*self.fxNum
+    
+    def getFNode(self, mathFIdx):
+        return self.faceMesh[self.math2geoFace(mathFIdx)]
+    
+    def isValidFGeoIdx(self, geoFIdx):
+        iy = geoFIdx[0]
+        ix = geoFIdx[1]
+        return iy>=0 and ix>=0 and iy<self.fyNum and ix<self.fxNum    
+    
+    def getNeighbouringFaces(self, mathVIdx):
+        assert(mathVIdx>=0)
+        assert(mathVIdx<=self.getVolumeNodeNum())
+
+        geoIdx = self.math2geoVolume(mathVIdx)
+
+        iy = geoIdx[0]
+        ix = geoIdx[1]
+        facePointList = []
+
+        for iy_diff, ix_diff in [(0,0), (0,1), (1,1), (1,0)]:
+                if not self.isValidFGeoIdx((iy+iy_diff,ix+ix_diff)):
+                    raise ValueError("Invalid face mesh found")
+                
+                facePointList.append(self.geo2mathFace((iy+iy_diff,ix+ix_diff)))
+
+        return facePointList
+    
+    def getNeighbouringFaceLines(self, mathVIdx):
+        facePointList = self.getNeighbouringFaces(mathVIdx=mathVIdx)
+        ret = []
+        for k in range(len(facePointList)):
+            f_line = self.getLineFromFNodes((facePointList[k], facePointList[(k+1)%len(facePointList)]))
+            ret.append(f_line)
+
+        return ret
+    
+    def getLineFromFNodes(self, fNodes):
+        mathFId1, mathFId2 = fNodes
+        return geo.Line(self.getFNode(mathFId1), self.getFNode(mathFId2))
+    
+    def getAreaOfElement(self, mathVIdx):
+        facePointList = self.getNeighbouringFaces(mathVIdx=mathVIdx)
+        x = [self.getFNode(fp).x for fp in facePointList]
+        y = [self.getFNode(fp).y for fp in facePointList]
+        return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
 
 
 def moveLine(point, x,y):
