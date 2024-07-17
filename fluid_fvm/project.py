@@ -38,8 +38,19 @@ class Component():
     def setMesh(self, m):
         self.mesh_exists = True
         self.mesh = m
-        self.mesh.constructMesh(self.assembly.base_polygon)
+        self.mesh.constructMesh(self.assembly.base_polygon, self.getSnapingLines())
 
+    def getSnapingLines(self):
+        snappingLines =[]
+        for line in self.assembly.getInnerPolygonLines():
+            isSnapping = True
+            for base_line in self.assembly.base_polygon.lines:
+                if base_line.isLineOnThisLine(line):
+                    isSnapping = False
+            if isSnapping:
+                snappingLines.append(line)
+        return snappingLines
+            
     def setPhysics(self, p):
         self.physics = p
 
