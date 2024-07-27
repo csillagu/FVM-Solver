@@ -118,7 +118,97 @@ class HeatTransfer(Physics):
             return coeff_mid, coeff_neighbour, coeff_const
         else:
             raise AttributeError("Boundary condition not supported")
+
+
+class HeatTransferFull(Physics):
+    def __init__(self, assembly, boundaries) -> None:
+        super().__init__()
+        self.assembly = assembly
+        self.defineBoundaries(boundaries)
+
+    def defineBoundaries(self, bcdict):
+        assert(set(bcdict.keys()).issubset(self.assembly.getLineNames()))
+        assert(set(bcdict.keys()).issuperset(self.assembly.getBaseLineNames()))
+        self.boundaries = bcdict
+    def isBoundary(self, name):
+        return name in self.boundaries.keys()
     
+
+    def getFluxInner(self, param, material, face_normal,  neighbour_vector, variable, ):
+        gamma = material.getProperty("gamma")
+        velocity = np.transpose(param.toNpArray())
+
+        neighbour_vector_np = neighbour_vector.toNpArray()
+        face_normal_np = face_normal.toNpArray()
+
+
+        Fe, Fc = self._Grad(neighbour_vector=neighbour_vector_np)
+        # J = gamma * dot(grad(phi), Se) =gamma*{ (Fc*phi_c+Fe*phi_e).x*Se.x + (Fc*phi_c+Fe*phi_e).y*Se.y } = gamma*{  Jc*phi_c + Je*phi_e } 
+
+        Jc = Fc@face_normal_np
+        Je = Fe@face_normal_np
+        #print("Jc, Je")
+        #print(Jc)
+        #print(Je)
+        #print("neighbour vetor: "+str(neighbour_vector.x)+ " y "+str(neighbour_vector.y))
+
+        # (grad T)[x] = sum(T|f * face_normal*1/vol*e_x)
+        Fe_gradT, Fc_gradT = self._Value(neighbour_vector=neighbour_vector_np)
+
+        Jc_gradT = Fc_gradT*velocity@face_normal_np*1/1
+        Je_gradT = Fe_gradT*velocity@face_normal_np*1/1
+
+
+        coeff_mid = gamma*Jc-Jc_gradT
+        coeff_neighbour = gamma*Je-Je_gradT
+        coeff_const = 0
+
+        return coeff_mid, coeff_neighbour, coeff_const
+    
+    def getFluxBoundary(self, param,boundary_face_name, material, face_normal,  neighbour_vector, variable, ):
+        velocity = np.transpose(param.toNpArray())
+        gamma = material.getProperty("gamma")
+
+        boundary =self.boundaries[boundary_face_name]
+        neighbour_vector_np = neighbour_vector.toNpArray()
+        face_normal_np = face_normal.toNpArray()
+
+        if boundary.type =="Dirichlet":
+            # T = const
+            Fb, Fc = self._Grad(neighbour_vector=neighbour_vector_np)
+            # J = gamma * dot(grad(phi), Sb) =gamma*{ (Fc*phi_c+Fb*phi_b).x*Sb.x + (Fc*phi_c+Fb*phi_b).y*Sb.y } = gamma*{  Jc*phi_c + Je*phi_b }
+
+            Jc = Fc@face_normal_np
+            Jb = Fb@face_normal_np
+
+            # (grad p)[x] = sum(p|f * face_normal*1/vol*e_x), here p|f = boundary.value
+
+            Jconst = boundary.value*velocity@face_normal_np*1/1
+
+            # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
+            # Is taken care of in the mesh class
+            coeff_mid = gamma*Jc
+            coeff_neighbour = 0
+            coeff_const = -gamma*Jb*boundary.value+Jconst
+
+            return coeff_mid, coeff_neighbour, coeff_const
+        elif boundary.type == "Neumann":
+            face_length = np.sqrt(face_normal.x**2+face_normal.y**2)
+
+            # (grad T)[x] = sum(T|f * face_normal*1/vol*velocity)
+            Jc_gradT = 1*velocity@face_normal_np*1/1 #T|f = T1 thus coefficient 1
+
+            # Division by two due to the fact that the boundary is half as close as the mirrored node on the other side of the boundary
+            # Is taken care of in the mesh class
+            coeff_mid = Jc_gradT
+            coeff_neighbour = 0
+            coeff_const =  boundary.value * face_length
+            return coeff_mid, coeff_neighbour, coeff_const
+        else:
+            raise AttributeError("Boundary condition not supported")
+    def getSourceValue(self, param,point, volume, variable, ):
+        return 0
+
 class CouetteFlow(Physics):
     def __init__(self, assembly, boundaries, flowDirectionUnitVector) -> None:
         super().__init__()
