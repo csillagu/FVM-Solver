@@ -56,7 +56,7 @@ class RectangularConfig(MeshConfig):
 
                 
     
-    def constructMesh(self, base):
+    def constructMesh(self, base, *args):
         if len(base.lines) != 4:
             raise ValueError("Base must be rectangular")
         #print(base.lines[0].isPerpendicular(base.lines[1]) and base.lines[1].isPerpendicular(base.lines[2]) and base.lines[2].isPerpendicular(base.lines[3]))
