@@ -313,6 +313,8 @@ class PoissonFlowFixP(Physics):
         Fe, Fc = self._Grad(neighbour_vector=neighbour_vector_np)
         # J = mu * dot(grad(phi), Se) =gamma*{ (Fc*phi_c+Fe*phi_e).x*Se.x + (Fc*phi_c+Fe*phi_e).y*Se.y } = gamma*{  Jc*phi_c + Je*phi_e } 
         face_dir_corr = (face_normal*self.flowNormal)
+        if not face_dir_corr ==0:
+            face_dir_corr = face_dir_corr/abs(face_dir_corr)
         
         Jc = Fc@face_normal_np*abs(face_dir_corr)
         Je = Fe@face_normal_np*abs(face_dir_corr)
