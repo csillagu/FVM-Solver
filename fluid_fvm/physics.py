@@ -159,8 +159,8 @@ class HeatTransferFull(Physics):
         Je_gradT = Fe_gradT*velocity@face_normal_np*1/1
 
 
-        coeff_mid = gamma*Jc-Jc_gradT
-        coeff_neighbour = gamma*Je-Je_gradT
+        coeff_mid = gamma*Jc+Jc_gradT
+        coeff_neighbour = gamma*Je+Je_gradT
         coeff_const = 0
 
         return coeff_mid, coeff_neighbour, coeff_const
@@ -189,7 +189,7 @@ class HeatTransferFull(Physics):
             # Is taken care of in the mesh class
             coeff_mid = gamma*Jc
             coeff_neighbour = 0
-            coeff_const = -gamma*Jb*boundary.value+Jconst
+            coeff_const = -gamma*Jb*boundary.value-Jconst
 
             return coeff_mid, coeff_neighbour, coeff_const
         elif boundary.type == "Neumann":
