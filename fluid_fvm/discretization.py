@@ -181,12 +181,12 @@ class LinearFullParametricDiscretizetion(Discretizer):
                 for neighbour in range(len(neighbour_node_nums)):
                     neighbour_line_name = geometry.getCoincidentLineName(neighbour_faces[neighbour])
                     if neighbour_node_nums[neighbour] == []:
-                        d_coeffs = physics.getFluxBoundary(param = param[node_geo],material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
+                        d_coeffs = physics.getFluxBoundary(param = param[node],material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
                                                         neighbour_vector=neighbour_nodes[neighbour], 
                                                         boundary_face_name=neighbour_line_name, variable = variable)
                     else:
                         
-                        d_coeffs = physics.getFluxInner(param = param[node_geo], material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
+                        d_coeffs = physics.getFluxInner(param = param[node], material=node_material, face_normal=neighbour_faces[neighbour].getNormal(), 
                                                         neighbour_vector=neighbour_nodes[neighbour], variable = variable)
                     print("Node:"+str(node) +"  Neighbour: "+str(neighbour) + " Nwighbour idx: " + str(neighbour_node_nums[neighbour]))
                     print("Self"+str(d_coeffs[0]))
@@ -209,5 +209,5 @@ class LinearFullParametricDiscretizetion(Discretizer):
                 #print(str(row_idx)+":"+str(row_idx+self.num_variables)+"<="+str(self_coefficient))
                 #print(self.Amrx[row_idx+variable, (row_idx):(row_idx+self.num_variables)])
                 self.Amrx[row_idx+variable, (row_idx):(row_idx+self.num_variables)] = self_coefficient
-                self.Bmrx[row_idx+variable,0] = local_B_coefficient+physics.getSourceValue(param = param[node_geo], point=node_point,volume = node_volume, variable=variable)
+                self.Bmrx[row_idx+variable,0] = local_B_coefficient+physics.getSourceValue(param = param[node], point=node_point,volume = node_volume, variable=variable)
             
